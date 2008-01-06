@@ -1,0 +1,17 @@
+COPYING
+debian/changelog
+debian/compat
+debian/control
+debian/copyright
+debian/rules
+debian/watch
+examples/expander.pl
+examples/spin.pl
+lib/Gtk2/Ex/NoShrink.pm
+Makefile.PL
+MANIFEST			This list of files
+README
+SIGNATURE
+t/NoShrink.t
+t/pod.t
+META.yml                                 Module meta-data (added by MakeMaker)

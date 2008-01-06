@@ -1,0 +1,39 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.55.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 8624bcdae55baeef00cd11d5dfcfa60f68710a02 COPYING
+SHA1 cc46a78a2aee937d6e40494748e5a71825647e86 MANIFEST
+SHA1 e3eb665b6593def5fe6921e137f6bc793ee20c90 META.yml
+SHA1 59da8656a9e87d3863fcec7d41e7d6852e6aca1b Makefile.PL
+SHA1 3849e6b8e3a6f052058fc4873dc500501b524cfc README
+SHA1 396a87a0a38e1be2c9d9194c86c2035f3853ffea debian/changelog
+SHA1 1b6453892473a467d07372d45eb05abc2031647a debian/compat
+SHA1 8dbd60a344f9993bbc91ea3ad36905fb2553d12f debian/control
+SHA1 351130687211b1db3febd423913bd43158454943 debian/copyright
+SHA1 ec435b779188869204e097b4aeb8186bd7ca6d51 debian/rules
+SHA1 272bb72e599e69db4ff68c59bcb6f7919293f8fa debian/watch
+SHA1 1981e1e016e93c95bcb2da3963eb4ab16c2e02c8 examples/expander.pl
+SHA1 5196bcabb3a582ebe6f2b54e1b442ea2cb89c479 examples/spin.pl
+SHA1 76b26b535670539805396d13de316953a1ed868d lib/Gtk2/Ex/NoShrink.pm
+SHA1 b5fd34457ee84d5776b88ec38e881f2522c18681 t/NoShrink.t
+SHA1 a661a39e55a4127aecb1b97a631c4f01f7dce8c6 t/pod.t
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHgU0zLFMCIV9q3ToRAunTAKCqiZyq/kZSXwcrekoVJhOEyF+29ACeP27c
+DGo9ZBJ3r2F75u1Vg8cI3Ro=
+=KuwF
+-----END PGP SIGNATURE-----
