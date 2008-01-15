@@ -16,32 +16,32 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package Gtk2::Ex::NoShrink;
-our $VERSION = 1;
+our $VERSION = 2;
 
 use strict;
 use warnings;
 use Gtk2;
 use List::Util qw(min max);
-use POSIX;
+use POSIX qw(INT_MAX DBL_MAX);
 
 use Glib::Object::Subclass
   Gtk2::Bin::,
-  signals => { size_allocate => \&_do_size_allocate,
-               size_request  => \&_do_size_request,
+  signals => { size_allocate => \&do_size_allocate,
+               size_request  => \&do_size_request,
              },
   properties => [Glib::ParamSpec->int
                  ('minimum-width',
                   'minimum-width',
                   '',
-                  -1, INT_MAX,  # range
-                  -1,           # default
+                  0, INT_MAX,  # range
+                  0,           # default
                   Glib::G_PARAM_READWRITE),
                  Glib::ParamSpec->int
                  ('minimum-height',
                   'minimum-height',
                   '',
-                  -1, INT_MAX,  # range
-                  -1,           # default
+                  0, INT_MAX,  # range
+                  0,           # default
                   Glib::G_PARAM_READWRITE),
                  
                  Glib::ParamSpec->double
@@ -68,63 +68,57 @@ use constant DEBUG => 0;
 # called by anyone interested in how big we'd like to be - ask our child in
 # turn, and add the border width
 # 
-sub _do_size_request {
+sub do_size_request {
   my ($self, $req) = @_;
 
-  my $min_width  = $self->{'minimum_width'};
-  my $min_height = $self->{'minimum_height'};
+  my $old_min_width  = $self->{'minimum_width'};
+  my $old_min_height = $self->{'minimum_height'};
+  my $min_width  = $old_min_width;
+  my $min_height = $old_min_height;
 
   my $child = $self->get_child;
   if ($child && $child->visible) {
     my $creq = $child->size_request;
 
-    if ($creq->width != -1) {
-      my $width_factor = $self->{'shrink_width_factor'};
-      if ($width_factor > 0 && $creq->width * $width_factor <= $min_width) {
-        $min_width = $creq->width;
-      } else {
-        $min_width = max ($min_width, $creq->width);
-      }
+    my $width_factor = $self->{'shrink_width_factor'};
+    if ($width_factor > 0 && $creq->width * $width_factor <= $min_width) {
+      $min_width = $creq->width;
+    } else {
+      $min_width = max ($min_width, $creq->width);
     }
-    if ($creq->height != -1) {
-      my $height_factor = $self->{'shrink_height_factor'};
-      if ($height_factor >0 && $creq->height * $height_factor <= $min_height) {
-        $min_height = $creq->height;
-      } else {
-        $min_height = max ($min_height, $creq->height);
-      }
+
+    my $height_factor = $self->{'shrink_height_factor'};
+    if ($height_factor >0 && $creq->height * $height_factor <= $min_height) {
+      $min_height = $creq->height;
+    } else {
+      $min_height = max ($min_height, $creq->height);
     }
   }
 
   if (DEBUG) {
-    if (   $min_width  != $self->{'minimum_width'}
-        || $min_height != $self->{'minimum_height'}) {
+    if ($min_width  != $old_min_width || $min_height != $old_min_height) {
       print $self->get_name," request ",$min_width,"x",$min_height,
-        ", extending min ",$self->{'minimum_width'},
-          "x",$self->{'minimum_height'};
+        ", extending min ",$old_min_width,"x",$old_min_height;
       if ($child) {
         my $creq = $child->size_request;
         print ", for child ", ($child->visible ? '' : '(not visible) '),
           "req ",$creq->width,"x",$creq->height;
       }
-      print "\n";
+      print " border ",$self->get_border_width,"\n";
     }
   }
 
   # set and notify any new minimum for the width/height from the child
   #
-  my $old_min_width  = $self->{'minimum_width'};
-  my $old_min_height = $self->{'minimum_height'};
   $self->{'minimum_width'}  = $min_width;
   $self->{'minimum_height'} = $min_height;
-  # believe cleanest to notify only after both width and height updated
+  # believe cleanest to notify after both width and height updated
   if ($old_min_width  != $min_width)  { $self->notify ('minimum-width'); }
   if ($old_min_height != $min_height) { $self->notify ('minimum-height'); }
 
-  my $border_width = $self->get('border-width');
-  # if -1 sizes then don't add border_width
-  $req->width  ($min_width  + ($min_width  >= 0 ? 2*$border_width : 0));
-  $req->height ($min_height + ($min_height >= 0 ? 2*$border_width : 0));
+  my $border_width = $self->get_border_width;
+  $req->width  ($min_width  + 2*$border_width);
+  $req->height ($min_height + 2*$border_width);
 }
 
 # 'size-allocate' class closure
@@ -132,7 +126,7 @@ sub _do_size_request {
 # called by our parent to give us our actual allocated space - pass this
 # down to the child, less the border width
 # 
-sub _do_size_allocate {
+sub do_size_allocate {
   my ($self, $alloc) = @_;
   if (my $child = $self->get_child) {
     my $border_width  = $self->get_border_width;
@@ -165,8 +159,8 @@ sub SET_PROPERTY {
 sub INIT_INSTANCE {
   my ($self) = @_;
   # per defaults in the ParamSpec's above
-  $self->{'minimum_width'}  = -1;
-  $self->{'minimum_height'} = -1;
+  $self->{'minimum_width'}  = 0;
+  $self->{'minimum_height'} = 0;
   $self->{'shrink_width_factor'} = 0;
   $self->{'shrink_height_factor'} = 0;
 }
@@ -200,15 +194,22 @@ imposes a "no shrink" policy on its requested size.  The child can grow, but
 any request to shrink is ignored.
 
 When the child requests a size the NoShrink sets that as its own desired
-size, ie. the size it requests from its own parent in turn.  But if the
-child later changes its request asking to be smaller, the NoShrink stays at
-the previous larger size, thus keeping the child's largest-ever request.
-This largest size is maintained separately for width and for height.
+size, ie. the size it requests from its parent in turn.  But if the child
+later changes its request asking to be smaller, the NoShrink stays at the
+previous larger size, thus keeping the child's largest-ever request.  A
+largest size is maintained separately for width and for height.
 
 Requested sizes are of course just that: only requests.  It's a matter for
-the NoShrink's parent how much space is actually allocated.  In any case the
-NoShink gives its child the full actual allocated space, less the usual
-container C<border-width> amount (a C<Gtk2::Container> property).
+the NoShrink's parent how much space is actually provided.  The NoShink
+always sets its child to the full allocated space, less the usual
+C<border-width> (a C<Gtk2::Container> property) if that's set.  As usual
+it's then a matter for the child what it does in a size possibly bigger or
+possibly smaller than what it said it wanted.
+
+If a child is added but not shown (no C<< $child->show >>) then it's treated
+as if there was no child.  This is the same as other container classes do,
+and for NoShrink it means a size of the C<minimum-width> x C<minimum-height>
+(plus C<border-width>) and nothing drawn.
 
 =head1 FUNCTIONS
 
@@ -237,14 +238,14 @@ later,
 
 =over 4
 
-=item C<minimum-width> (integer, default -1)
+=item C<minimum-width> (integer, default 0)
 
-=item C<minimum-height> (integer, default -1)
+=item C<minimum-height> (integer, default 0)
 
 The currently accumulated minimum width and height to impose on the size
 request made by the child.  These are maintained as the largest width and
-height requested from the child so far, or -1 for no particular size
-requested in that direction so far.
+height requested from the child so far, or 0 for no size requested in that
+direction so far.
 
 Both sizes are for the child's space.  If the C<Gtk2::Container>
 C<border-width> property is set then that's added on top of these for the
@@ -256,14 +257,12 @@ example
     my $noshrink = Gtk2::Ex::NoShrink->new (minimum_width => 30,
                                             minimum_height => 20);
 
-Or they can be reduced later to reset the size.  A setting of -1 means to go
-right down to the child's current requested size.  This is good if the
-nature of the child's content has changed,
+They can also be reduced later to reset the size, giving either the child's
+size or the specified new value, whichever is greater.  Setting 0 for
+instance would always go down to the child's current requested size.  This
+is good if the nature of the child's content has changed,
 
-    $noshring->set('minimum-width', -1);  # reset to child size
-
-Or a particular size in pixels can be set, to get the child's size or that
-new size, whichever is larger.
+    $noshring->set('minimum-width', 0);  # reset to child size
 
 These minimum size properties are unaffected by any removal of the child
 widget or re-add of a new child.  If a new widget has a completely different

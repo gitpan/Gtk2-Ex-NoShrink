@@ -26,10 +26,11 @@
 #
 # The NoShrink has the shrink_width_factor option is set in this example and
 # you can see how it allows shrinks of a certain big enough amount.  In this
-# setting 2 means a factor of 2 (or more) smaller than the current recorded
-# peak will be obeyed (and it resets the peak to that new smaller size).  So
-# for instance if you run the spinner up to 300 pixels and then start
-# running it down again, when it reaches 150 pixel that size will be obeyed.
+# case a setting 2 means a factor of 2 (or more) smaller than the current
+# recorded peak will be obeyed (and it resets the peak to that new smaller
+# size).  So for instance if you run the spinner up to 300 pixels and then
+# start running it down again, when it reaches 150 pixel that size will be
+# obeyed.
 #
 # If you uncomment the line "$noshrink = Gtk2::Frame->new;" you can see what
 # happens in a GtkFrame container instead of a NoShrink.  A frame simply
@@ -63,17 +64,21 @@ $spin->signal_connect (value_changed => sub {
 my $noshrink = Gtk2::Ex::NoShrink->new (shrink_width_factor => 2);
 #
 # try this for plain frame instead of noshrink:
-#
 # $noshrink = Gtk2::Frame->new;
 #
+$noshrink->set_border_width (5);
 $noshrink->add ($spin);
 
 my $layout = Gtk2::Layout->new;
-my $req = $spin->size_request;
-$layout->set_size_request (-1, $req->height);  # the spinner's desired height
 $layout->add ($noshrink);
-
+$layout->show_all;
 $toplevel->add ($layout);
-$toplevel->show_all;
+
+# lock height of the spinner and any noshrink border width because a layout
+# widget doesn't otherwise offer a desired height
+my $req = $noshrink->size_request;
+$layout->set_size_request (-1, $req->height);
+
+$toplevel->show;
 Gtk2->main;
 exit 0;

@@ -16,7 +16,7 @@
 # with Gtk2::Ex::NoShrink.  If not, see <http://www.gnu.org/licenses/>.
 
 
-use Test::More tests => 4;
+use Test::More tests => 12;
 
 use Gtk2;
 use Gtk2::Ex::NoShrink;
@@ -27,7 +27,7 @@ ok ($Gtk2::Ex::NoShrink::VERSION >= 1);
 my $init = Gtk2->init_check;
 
 SKIP: {
-  if (! $init) { skip 'due to no DISPLAY available', 3; }
+  if (! $init) { skip 'due to no DISPLAY available', 11; }
 
   {
     my $noshrink = Gtk2::Ex::NoShrink->new;
@@ -47,6 +47,38 @@ SKIP: {
         'garbage collected when weakened, when not empty');
     is ('not defined', defined $label ? 'defined' : 'not defined',
         'content garbage collected when weakened');
+  }
+
+  {
+    # $noshrink->size_request calls only actually call the class method when
+    # inside a parent container, or something, otherwise they spit back just
+    # the widget->requisition -- hence $toplevel.
+    #
+    my $toplevel = Gtk2::Window->new ('toplevel');
+    my $noshrink = Gtk2::Ex::NoShrink->new;
+    $toplevel->add ($noshrink);
+    $toplevel->show_all;
+
+    my $req = $noshrink->size_request;
+    is ($req->width,  0, 'width of empty');
+    is ($req->height, 0, 'height of empty');
+
+    $noshrink->set_border_width (5);
+    $req = $noshrink->size_request;
+    is ($req->width,  10, 'width with border');
+    is ($req->height, 10, 'height with border');
+
+    my $draw = Gtk2::DrawingArea->new;
+    $noshrink->add ($draw);
+    $draw->set_size_request (123, 456);
+    $req = $noshrink->size_request;
+    is ($req->width,  10, 'width with draw hidden');
+    is ($req->height, 10, 'height with draw hidden');
+
+    $draw->show;
+    $req = $noshrink->size_request;
+    is ($req->width,  133, 'width with draw');
+    is ($req->height, 466, 'height with draw');
   }
 };
 

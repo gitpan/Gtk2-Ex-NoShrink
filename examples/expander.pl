@@ -34,9 +34,9 @@
 #
 # If you're wondering what the EventBox is for, it just gives a different
 # background colour for the label.  A label is a no-window widget (and
-# NoShrink too) and hence gets the background of its parent, so it's in
-# something with a window to have a background colour contrasting against
-# the layout parent.
+# NoShrink is a no-window too) and hence gets the background of its parent,
+# put it in something with a window to have a background colour contrasting
+# against the layout parent.
 
 
 use strict;
