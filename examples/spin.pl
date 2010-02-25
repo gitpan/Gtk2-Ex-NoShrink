@@ -1,23 +1,25 @@
-# NoShrink widget with size requested by numeric spinner.
+#!/usr/bin/perl
 
-# Copyright 2007, 2008 Kevin Ryde
+# Copyright 2007, 2008, 2009 Kevin Ryde
 
-# This file is part of Gtk2::Ex::NoShrink.
+# This file is part of Gtk2-Ex-NoShrink.
 #
-# Gtk2::Ex::NoShrink is free software; you can redistribute it and/or modify
+# Gtk2-Ex-NoShrink is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by the
 # Free Software Foundation; either version 3, or (at your option) any later
 # version.
 #
-# Gtk2::Ex::NoShrink is distributed in the hope that it will be useful, but
+# Gtk2-Ex-NoShrink is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 #
 # You should have received a copy of the GNU General Public License along
-# with this program.  If not, see <http://www.gnu.org/licenses/>.
+# with Gtk2-Ex-NoShrink.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# NoShrink widget with size requested by numeric spinner.
+#
 # This is a manually operated example.  The desired size of the spinner
 # widget is set (set_size_request), in pixels, from the value you enter or
 # scroll up or down to.  Then because it's inside a NoShrink container the
@@ -52,7 +54,12 @@ my $screen_width = $toplevel->get_screen->get_width;
 $toplevel->set_default_size ($screen_width / 2, -1);
 $toplevel->signal_connect (destroy => sub { Gtk2->main_quit; });
 
-my $adj = Gtk2::Adjustment->new (40, 0,$screen_width, 1,10,10);
+my $adj = Gtk2::Adjustment->new (40,            # initial value
+                                 0,             # lower
+                                 $screen_width, # upper
+                                 1,             # step_increment
+                                 10,            # page_increment
+                                 0);            # page_size not applicable
 
 my $spin = Gtk2::SpinButton->new ($adj, 10, 0);
 $spin->set_size_request ($spin->get_value, -1);
