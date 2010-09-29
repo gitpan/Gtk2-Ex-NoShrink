@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
@@ -23,9 +23,11 @@ use Test::More;
 
 # Test::Weaken 3 for "contents"
 BEGIN {
-  my $have_test_weaken = eval "use Test::Weaken 3; 1";
+  my $have_test_weaken = eval "use Test::Weaken 3;
+                               use Test::Weaken::Gtk2;
+                               1";
   if (! $have_test_weaken) {
-    plan skip_all => "due to Test::Weaken 3 not available -- $@";
+    plan skip_all => "due to Test::Weaken 3 and/or Test::Weaken::Gtk2 not available -- $@";
   }
   diag ("Test::Weaken version ", Test::Weaken->VERSION);
 
@@ -38,7 +40,6 @@ BEGIN {
 use Gtk2::Ex::NoShrink;
 use lib 't';
 use MyTestHelpers;
-use Test::Weaken::Gtk2;
 
 require Gtk2;
 MyTestHelpers::glib_gtk_versions();

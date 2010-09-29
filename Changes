@@ -16,6 +16,9 @@ You should have received a copy of the GNU General Public License along
 with Gtk2-Ex-NoShrink.  If not, see <http://www.gnu.org/licenses/>.
 
 
+Version 4, September 2010
+    - test manifest only as an author test
+
 Version 3, February 2010
     - no redraw_on_allocation since NoShrink doesn't draw
 

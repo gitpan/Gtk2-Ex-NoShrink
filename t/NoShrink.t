@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
@@ -20,14 +20,15 @@
 use strict;
 use warnings;
 use lib 't';
-use Test::More tests => 19;
+use Test::More tests => 10;
 
-BEGIN { SKIP: { eval 'use Test::NoWarnings; 1'
-                  or skip 'Test::NoWarnings not available', 1; } }
+use lib 't';
+use MyTestHelpers;
+BEGIN { MyTestHelpers::nowarnings() }
 
 require Gtk2::Ex::NoShrink;
 
-my $want_version = 3;
+my $want_version = 4;
 is ($Gtk2::Ex::NoShrink::VERSION, $want_version, 'VERSION variable');
 is (Gtk2::Ex::NoShrink->VERSION,  $want_version, 'VERSION class method');
 {
@@ -48,7 +49,7 @@ MyTestHelpers::glib_gtk_versions();
 {
   my $noshrink = Gtk2::Ex::NoShrink->new;
 
-  cmp_ok ($noshrink->VERSION, '>=', $want_version, 'VERSION object method');
+  is ($noshrink->VERSION, $want_version, 'VERSION object method');
   ok (eval { $noshrink->VERSION($want_version); 1 },
       "VERSION object check $want_version");
   my $check_version = $want_version + 1000;
@@ -69,47 +70,6 @@ MyTestHelpers::glib_gtk_versions();
 
   is ($noshrink, undef, 'garbage collected when weakened, when not empty');
   is ($label, undef, 'child label garbage collected when weakened');
-}
-
-
-#------------------------------------------------------------------------------
-
-Gtk2->disable_setlocale;  # leave LC_NUMERIC alone for version nums
-my $have_display = Gtk2->init_check;
-diag "have_display: ",($have_display ? "yes" : "no");
-
-SKIP: {
-  $have_display or skip 'due to no DISPLAY available', 8;
-
-  # $noshrink->size_request calls only actually call the class method when
-  # inside a parent container, or something, otherwise they spit back just
-  # the widget->requisition -- hence $toplevel.
-  #
-  my $toplevel = Gtk2::Window->new ('toplevel');
-  my $noshrink = Gtk2::Ex::NoShrink->new;
-  $toplevel->add ($noshrink);
-  $toplevel->show_all;
-
-  my $req = $noshrink->size_request;
-  is ($req->width,  0, 'width of empty');
-  is ($req->height, 0, 'height of empty');
-
-  $noshrink->set_border_width (5);
-  $req = $noshrink->size_request;
-  is ($req->width,  10, 'width with border');
-  is ($req->height, 10, 'height with border');
-
-  my $draw = Gtk2::DrawingArea->new;
-  $noshrink->add ($draw);
-  $draw->set_size_request (123, 456);
-  $req = $noshrink->size_request;
-  is ($req->width,  10, 'width with draw hidden');
-  is ($req->height, 10, 'height with draw hidden');
-
-  $draw->show;
-  $req = $noshrink->size_request;
-  is ($req->width,  133, 'width with draw');
-  is ($req->height, 466, 'height with draw');
 }
 
 exit 0;

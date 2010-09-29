@@ -23,7 +23,7 @@ use Gtk2;
 use List::Util qw(min max);
 use POSIX ();
 
-our $VERSION = 3;
+our $VERSION = 4;
 
 # set this to 1 for some diagnostic prints
 use constant DEBUG => 0;

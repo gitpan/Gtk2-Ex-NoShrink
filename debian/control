@@ -25,13 +25,13 @@ Section: perl
 Priority: optional
 Build-Depends: cdbs, debhelper (>= 5)
 Maintainer: Kevin Ryde <user42@zip.com.au>
-Standards-Version: 3.8.4
+Standards-Version: 3.9.1
 Homepage: http://user42.tuxfamily.org/gtk2-ex-noshrink/index.html
 Bugs: mailto:user42@zip.com.au
 
 Package: libgtk2-ex-noshrink-perl
 Architecture: all
-Depends: libglib-perl, libgtk2-perl, ${misc:Depends}
+Depends: libglib-perl, libgtk2-perl, ${perl:Depends}, ${misc:Depends}
 Description: Non-shrinking container widget for Gtk2-Perl
  Gtk2::Ex::NoShrink holds a single child and imposes a "no shrink"
  policy on the size it requests.  Any request to become smaller is
